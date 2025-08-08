@@ -11,3 +11,10 @@ mkdir -p <working_directory>/auth
 cp kubeconfig <working_directory>/auth
 export KUBECONFIG=<your working directory>/auth/kubeconfig
 oc login -u kubeadmin -p <password>
+
+
+
+yum install tigervnc-server -y
+vncpasswd
+systemctl enable --now vncserver
+systemctl enable --now vncserver@:5900
