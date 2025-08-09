@@ -14,7 +14,14 @@ oc login -u kubeadmin -p <password>
 
 
 
-yum install tigervnc-server -y
+dnf install tigervnc-server -y
+sudo cp /usr/lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:3.service
+echo ":2=core" >> /etc/tigervnc/vncserver.users
+echo ":3=root" >> /etc/tigervnc/vncserver.users
+
 vncpasswd
-systemctl enable --now vncserver
-systemctl enable --now vncserver@:5900
+
+systemctl daemon-reload
+systemctl enable --now vncserver@:2.service
+systemctl enable --now vncserver@:3.service
+# disable SELinux
