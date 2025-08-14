@@ -1,0 +1,87 @@
+apiVersion: "observability.openshift.io/v1"
+kind: "ClusterLogForwarder"
+metadata:
+  name: "instance"
+  namespace: "openshift-logging"
+spec:
+  serviceAccount:
+    name: "log-forwarder"
+  outputs:
+    - name: splunk-audit
+      type: splunk
+      splunk:
+        url: "https://<SPLUNK_HOST_OR_IP>:8088"
+        indexName: "openshift_audit"
+        insecureSkipVerify: true # Change to false and add trustedCaBundle if using a trusted cert
+      secret:
+        name: splunk-hec-token
+        key: hecToken
+    - name: splunk-prod
+      type: splunk
+      splunk:
+        url: "https://<SPLUNK_HOST_OR_IP>:8088"
+        indexName: "openshift_prod"
+        insecureSkipVerify: true
+      secret:
+        name: splunk-hec-token
+        key: hecToken
+    - name: splunk-dev-errors
+      type: splunk
+      splunk:
+        url: "https://<SPLUNK_HOST_OR_IP>:8088"
+        indexName: "openshift_dev_errors"
+        insecureSkipVerify: true
+      secret:
+        name: splunk-hec-token
+        key: hecToken
+
+  filters:
+    - name: filter-prod-namespaces
+      type: prune
+      prune:
+        # Keep logs only if they are from a namespace ending in '-prod'
+        in:
+          - .kubernetes.namespace_name
+        notIn:
+          - "**/*-prod"
+    - name: filter-dev-error-logs
+      type: prune
+      prune:
+        # Keep logs only if they are from a dev namespace AND have a high severity
+        in:
+          - .kubernetes.namespace_name
+          - .level
+        notIn:
+          - "**/*-dev"
+          - "error"
+          - "critical"
+          - "alert"
+          - "emergency"
+
+  pipelines:
+    # Pipeline 1: Send all audit logs to the audit index
+    - name: audit-to-splunk
+      inputRefs:
+        - audit
+      outputRefs:
+        - splunk-audit
+
+    # Pipeline 2: Send logs from production namespaces to the prod index
+    - name: prod-to-splunk
+      inputRefs:
+        - application
+        - infrastructure
+      filterRefs:
+        - filter-prod-namespaces
+      outputRefs:
+        - splunk-prod
+
+    # Pipeline 3: Send high-severity logs from dev namespaces to the dev-errors index
+    - name: dev-errors-to-splunk
+      inputRefs:
+        - application
+        - infrastructure
+      filterRefs:
+        - filter-dev-error-logs
+      outputRefs:
+        - splunk-dev-errors
