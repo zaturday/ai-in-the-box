@@ -1,0 +1,25 @@
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: vlan3558-bond1-ktbdwhwknd03
+spec:
+  nodeSelector: 
+    kubernetes.io/hostname: ktbdwhwknd03.cmsnonprd.vayuktbcs
+  desiredState:
+    interfaces:
+    - name: bond1.3558
+      description: vlan using bond1
+      type: vlan
+      state: up
+      mtu: 9000
+      vlan:
+        base-iface: bond1
+        id: 3558
+      ipv4:
+        address:
+        - ip: 192.168.58.3
+          prefix-length: 24
+        dhcp: false
+        enabled: true
+      ipv6:
+        enabled: false
