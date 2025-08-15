@@ -58,3 +58,18 @@ spec:
       node-role.kubernetes.io/infra: ""
 ```
 
+maybe spec for MCP
+```
+  machineConfigSelector:
+    matchExpressions:
+    - key: machineconfiguration.openshift.io/role
+      operator: In
+      values:
+      - worker
+      - infra
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/infra: ""
+
+```
+
