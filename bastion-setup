@@ -12,9 +12,12 @@ dnf install httpd
 
 #create a new user
 useradd -m -s /bin/bash -G wheel db2adm
+useradd -m -s /bin/bash -G wheel core
+passwd core
 passwd db2adm
 #add to sudoers
-echo "db2adm ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+echo "db2adm ALL=(ALL) ALL" >> /etc/sudoers
+echo "core ALL=(ALL) ALL" >> /etc/sudoers
 
 
 
