@@ -51,12 +51,16 @@ multipath create configure multipath and start service
 sudo dnf install -y nfs-utils
 sudo systemctl enable --now nfs-server
 sudo systemctl enable --now rpcbind
-
-
-
 sudo pvcreate /dev/mapper/mpathb
+sudo vgcreate vg_db2export /dev/mapper/mpathb
+sudo lvcreate -n lv_db2export -l +100%FREE vg_db2export
+sudo mkfs.xfs /dev/vg_db2export/lv_db2export
 
 sudo mkdir -p /db2export
+sudo mount /dev/vg_db2export/lv_db2export /db2export
+sudo vi /etc/fstab
+#/dev/vg_db2export/lv_db2export /db2export xfs defaults 0 0
+
 
 echo "/db2export 192.168.1.0/24(rw,sync,no_root_squash)" >> /etc/exports
 sudo exportfs -rav
