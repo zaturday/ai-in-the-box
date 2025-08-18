@@ -82,7 +82,8 @@ Test Steps
    oc exec -it rwx-test-ss-1 -- cat /mnt/data/testfile.txt
 
 5. Simulate node failure (example using drain):
-   oc adm drain <node-name> --ignore-daemonsets --force --delete-emptydir-data
+#   oc adm drain <node-name> --ignore-daemonsets --force --delete-emptydir-data
+### reboot node
 
 6. Watch pod rescheduling:
    oc get pods -w
