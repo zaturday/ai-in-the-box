@@ -1,23 +1,25 @@
-apiVersion: logging.openshift.io/v1
+apiVersion: observability.openshift.io/v1
 kind: ClusterLogForwarder
 metadata:
   name: instance
   namespace: openshift-logging
 spec:
+  managementState: Managed
   outputs:
-    - name: rsyslog-ocp
-      type: syslog
-      url: udp://10.51.240.151:514
-      syslog:
-        rfc: RFC3164
-        facility: user
-        severity: informational
+  - name: rsyslog-ocp
+    syslog:
+      facility: user
+      rfc: RFC3164
+      severity: informational
+      url: tcp://10.51.240.151:514
+    type: syslog
   pipelines:
-    - name: syslog-ocp
-      inputRefs:
-        - infrastructure
-        - audit
-        - application
-      outputRefs:
-        - rsyslog-ocp
-        - default
+  - inputRefs:
+    - infrastructure
+    - audit
+    - application
+    name: syslog-ocp
+    outputRefs:
+    - rsyslog-ocp
+  serviceAccount:
+    name: default
