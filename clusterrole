@@ -1,1 +1,5 @@
-oc create clusterrolebinding collect-app-logs --clusterrole=collect-audit-logs --serviceaccount openshift-logging:default
+# Bonding SA:Default on NS:openshift-logging
+
+oc create clusterrolebinding collect-app-logs --clusterrole=collect-application-logs --serviceaccount openshift-logging:default
+oc create clusterrolebinding collect-audit-logs --clusterrole=collect-audit-logs --serviceaccount openshift-logging:default
+oc create clusterrolebinding collect-infra-logs --clusterrole=collect-infrastructure-logs --serviceaccount openshift-logging:default
