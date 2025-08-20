@@ -1,0 +1,1 @@
+oc create clusterrolebinding collect-app-logs --clusterrole=collect-audit-logs --serviceaccount openshift-logging:default
