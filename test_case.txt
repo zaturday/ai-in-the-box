@@ -97,3 +97,56 @@ Expected Results
 - Data in /mnt/data remains consistent and accessible across pods
 - No read-only or mount failure errors in pod logs
 
+
+
+
+
+------
+#test-case yaml file
+#1. test-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-pvc
+spec:
+  storageClassName: ibm-spectrum-scale-sample
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+      
+      
+----------------------      
+     
+#2.test-pod.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-pod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-pod
+  template:
+    metadata:
+      labels:
+        app: test-pod
+    spec:
+      nodeSeletor:
+        node-role.kubernetes.io/worker: ""
+      containers:
+      - name: busybox
+        image: busybox:1.36
+        command: ["/bin/sh"]
+        args: ["-c", "sleep 3600"]
+        volumeMounts:
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: test-pvc
+
+
