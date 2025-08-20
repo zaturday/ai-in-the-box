@@ -1,0 +1,21 @@
+apiVersion: observability.openshift.io/v1
+kind: ClusterLogForwarder
+metadata:
+  name: instance
+  namespace: openshift-logging
+spec:
+  outputs:
+  - name: syslog
+    syslog:
+      rfc: RFC3164
+      url: tcp://172.26.164.36:514
+      enrichment: KubernetesMinimal
+    type: syslog
+  pipelines:
+    - name: syslog-baac
+      inputRefs:
+        - audit
+      outputRefs:
+        - syslog
+  serviceAccount:
+    name: default 
