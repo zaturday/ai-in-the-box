@@ -8,11 +8,11 @@ spec:
   - name: syslog
     syslog:
       rfc: RFC3164
-      url: tcp://172.26.164.36:514
+      url: tcp://10.51.244.151:514
       enrichment: KubernetesMinimal
     type: syslog
   pipelines:
-    - name: syslog-baac
+    - name: syslog-dwh
       inputRefs:
         - audit
       outputRefs:
