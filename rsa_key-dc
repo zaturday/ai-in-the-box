@@ -1,1 +1,12 @@
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMrH4JsjAjZl5P/Gz0sQFtI5G1Se+zBwfBSUwRDzx+Ey root@KTBDWHBASTP01
+
+
+
+
+
+
+
+ssh-keygen -t ed25519 -N '' -f /root/.ssh/aura -q <<< y > /dev/null
+
+
+qhpdI-gVApZ-9cYhD-cZAqW

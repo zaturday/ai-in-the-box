@@ -1,0 +1,21 @@
+sk-pkA9PY8FQen-Qtwy-KGdOw
+
+
+from openai import OpenAI
+
+# Set the base URL for OpenAI to your custom endpoint
+client = OpenAI(
+    base_url="https://gpt.mfec.co.th/litellm",
+    api_key="API_KEY",
+)
+
+# Example: Create a chat completion
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Tell me a joke."}
+    ]
+)
+print(response.choices[0].message.content)
+    

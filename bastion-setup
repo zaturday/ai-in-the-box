@@ -10,6 +10,15 @@ echo "source ~/.bash_completion" >> ~/.bashrc
 dnf install httpd
 #copy ISO file for discovery to /var/www/html
 
+#create a new user
+useradd -m -s /bin/bash -G wheel db2adm
+passwd db2adm
+#add to sudoers
+echo "db2adm ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+
+
+
 #remote protocol
 dnf install tigervnc-server -y
 sudo cp /usr/lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:3.service
