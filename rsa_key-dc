@@ -1,12 +1,11 @@
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMrH4JsjAjZl5P/Gz0sQFtI5G1Se+zBwfBSUwRDzx+Ey root@KTBDWHBASTP01
 
-
-
-
-
-
-
 ssh-keygen -t ed25519 -N '' -f /root/.ssh/aura -q <<< y > /dev/null
 
-
 qhpdI-gVApZ-9cYhD-cZAqW
+
+ssh-keygen -t ed25519 -N '' -f /root/.ssh/dwhdc -q <<< y > /dev/null
+DC : ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMrH4JsjAjZl5P/Gz0sQFtI5G1Se+zBwfBSUwRDzx+Ey root@KTBDWHBASTP01
+
+ssh-keygen -t ed25519 -N '' -f /root/.ssh/dwhdr -q <<< y > /dev/null
+DR : ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIzq3JPLAIhmJPq20oEJ45gSp4bOcxzG8kCcM5NEAVIa root@KTBDWHBASTS01

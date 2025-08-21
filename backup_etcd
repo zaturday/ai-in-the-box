@@ -1,0 +1,26 @@
+\\backup procedure
+oc get proxy cluster -o yaml
+
+oc debug --as-root node/cpnode1
+
+chroot /host
+
+export HTTP_PROXY=http://<your_proxy.example.com>:8080
+export HTTPS_PROXY=https://<your_proxy.example.com>:8080
+export NO_PROXY=<example.com>
+
+
+/usr/local/bin/cluster-backup.sh /home/core/assets/backup
+
+
+
+\\restore pocedure
+
+$ cp <etcd_backup_directory> /home/core
+$ sudo -E /usr/local/bin/cluster-restore.sh /home/core/<etcd_backup_directory>
+$ oc adm wait-for-stable-cluster
+
+
+
+
+https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/backup_and_restore/control-plane-backup-and-restore#dr-restoring-cluster-state

@@ -1,0 +1,152 @@
+OpenShift StatefulSet RWX Storage Test
+This document describes a test case scenario for deploying a StatefulSet on OpenShift using IBM Spectrum Scale (GPFS) CSI with RWX (ReadWriteMany) storage. It includes YAML manifests and test steps for validating pod rescheduling during node failure.
+Test Case: Node Failure with RWX Volume Pod Rescheduling
+Objective: Verify that when a node hosting a pod goes down, the pod reschedules to another node and continues accessing the same RWX persistent volume without data loss.
+Pre-conditions
+- OpenShift cluster with at least 3 worker nodes
+- IBM Spectrum Scale CSI driver deployed
+- RWX StorageClass configured
+- StatefulSet with 3 replicas using RWX PVC
+YAML Manifests
+---
+# 1. StorageClass for IBM Spectrum Scale (RWX)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ibm-spectrum-scale-rwx
+provisioner: spectrumscale.csi.ibm.com
+parameters:
+  volBackendFs: "gpfs0"                # Change to your GPFS filesystem
+  volDirBasePath: "pvfileset/rwxdir"   # Base path for RWX volumes
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+---
+# 2. Headless Service required by StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: rwx-test-service
+spec:
+  clusterIP: None
+  selector:
+    app: rwx-test
+---
+# 3. StatefulSet with PVC managed inside
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rwx-test-ss
+spec:
+  serviceName: "rwx-test-service"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rwx-test
+  template:
+    metadata:
+      labels:
+        app: rwx-test
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: busybox
+        image: busybox:1.36
+        command: ["/bin/sh"]
+        args: ["-c", "sleep 3600"]
+        volumeMounts:
+        - name: rwx-storage
+          mountPath: /mnt/data
+  volumeClaimTemplates:
+  - metadata:
+      name: rwx-storage
+    spec:
+      accessModes: ["ReadWriteMany"]
+      resources:
+        requests:
+          storage: 2Gi
+      storageClassName: ibm-spectrum-scale-rwx
+
+Test Steps
+1. Apply manifests:
+   oc apply -f rwx-statefulset-pvc.yaml
+
+2. Verify pods:
+   oc get pods -o wide
+
+3. Write test data inside pod rwx-test-ss-0:
+   oc exec -it rwx-test-ss-0 -- sh
+   echo 'RWX StatefulSet Node Failover Test' > /mnt/data/testfile.txt
+
+4. Read the data from another pod (e.g., rwx-test-ss-1):
+   oc exec -it rwx-test-ss-1 -- cat /mnt/data/testfile.txt
+
+5. Simulate node failure (example using drain):
+#   oc adm drain <node-name> --ignore-daemonsets --force --delete-emptydir-data
+### reboot node
+
+6. Watch pod rescheduling:
+   oc get pods -w
+
+7. Verify data persistence after rescheduling:
+   oc exec -it <rescheduled-pod> -- cat /mnt/data/testfile.txt
+
+Expected Results
+- Pods reschedule to healthy nodes if one node goes down
+- RWX PVC mounts correctly without errors
+- Data in /mnt/data remains consistent and accessible across pods
+- No read-only or mount failure errors in pod logs
+
+
+
+
+
+------
+#test-case yaml file
+#1. test-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-pvc
+spec:
+  storageClassName: ibm-spectrum-scale-sample
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+      
+      
+----------------------      
+     
+#2.test-pod.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-pod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-pod
+  template:
+    metadata:
+      labels:
+        app: test-pod
+    spec:
+      nodeSeletor:
+        node-role.kubernetes.io/worker: ""
+      containers:
+      - name: busybox
+        image: busybox:1.36
+        command: ["/bin/sh"]
+        args: ["-c", "sleep 3600"]
+        volumeMounts:
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: test-pvc
+
+

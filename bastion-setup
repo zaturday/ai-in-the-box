@@ -12,9 +12,12 @@ dnf install httpd
 
 #create a new user
 useradd -m -s /bin/bash -G wheel db2adm
+useradd -m -s /bin/bash -G wheel core
+passwd core
 passwd db2adm
 #add to sudoers
 echo "db2adm ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+echo "core ALL=(ALL) ALL" >> /etc/sudoers
 
 
 
@@ -36,15 +39,45 @@ vi /etc/selinux/config
 
 ##
 
-#after-complete
+#after-complete OCP and configure enviroment
 mkdir -p <working_directory>/auth
 cp kubeconfig <working_directory>/auth
 export KUBECONFIG=<your working directory>/auth/kubeconfig
 oc login -u kubeadmin -p <password>
 
+## NFS disk for backup DB2
+scsi-rescan
+multipath create configure multipath and start service
+sudo dnf install -y nfs-utils
+sudo systemctl enable --now nfs-server
+sudo systemctl enable --now rpcbind
+sudo pvcreate /dev/mapper/mpathb
+sudo vgcreate vg_db2export /dev/mapper/mpathb
+sudo lvcreate -n lv_db2export -l +100%FREE vg_db2export
+sudo mkfs.xfs /dev/vg_db2export/lv_db2export
+
+sudo mkdir -p /db2export
+sudo mount /dev/vg_db2export/lv_db2export /db2export
+sudo vi /etc/fstab
+#/dev/vg_db2export/lv_db2export /db2export xfs defaults 0 0
 
 
-#test case proxy not download full
+echo "/db2export 192.168.1.0/24(rw,sync,no_root_squash)" >> /etc/exports
+sudo exportfs -rav
+
+
+
+
+
+##
+
+
+##
+
+
+
+
+#test case proxy not download full size file
 #https://access.redhat.com/downloads/content/290/ver=4.18/rhel---9/4.18.20/x86_64/product-software
 #wget https://access.cdn.redhat.com/content/origin/files/sha256/48/484084a03d8ebff98d47bf1e58c32f9579b29bd1a3011e843cd66ed3d362eb1e/openshift-client-linux-amd64-rhel9-4.18.20.tar.gz?user=13079f640b48897b665bc9764234e08b&_auth_=1754595536_64624e46fdbe850611dc6adf802459f4
 #tar -xvf openshift-client-linux-amd64-rhel9-4.18.20.tar.gz
